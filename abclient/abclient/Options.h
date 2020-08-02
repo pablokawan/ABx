@@ -243,6 +243,7 @@ private:
     int height_{ 0 };
     bool fullscreen_{ true };
     bool borderless_{ false };
+    bool windowed_{ false }; // Kawan>
     bool resizeable_{ false };
     bool maximized_{ false };
     bool internalMaximized_{ false };

@@ -125,6 +125,14 @@ void Options::Save()
         param.SetString("type", "bool");
         param.SetBool("value", windowMode == WindowMode::Borderless);
     }
+    // Kawan>
+    {
+        XMLElement param = root.CreateChild("parameter");
+        param.SetString("name", "Windowed");
+        param.SetString("type", "bool");
+        param.SetBool("value", windowMode == WindowMode::Windowed);
+    }
+    //
     {
         XMLElement param = root.CreateChild("parameter");
         param.SetString("name", "Maximized");
@@ -442,6 +450,10 @@ WindowMode Options::GetWindowMode() const
         return WindowMode::Fullcreen;
     if (borderless_)
         return WindowMode::Borderless;
+    // Kawan>
+    if (windowed_)
+        return WindowMode::Windowed;
+    //
     if (internalMaximized_ || maximized_)
         return WindowMode::Maximized;
     return WindowMode::Windowed;
@@ -506,7 +518,10 @@ void Options::SetFullscreen(bool value)
     {
         fullscreen_ = value;
         if (fullscreen_)
+        {
             borderless_ = false;
+            windowed_ = false; // Kawan>
+        }
         UpdateGraphicsMode();
     }
 }
@@ -517,7 +532,10 @@ void Options::SetBorderless(bool value)
     {
         borderless_ = value;
         if (borderless_)
+        {
             fullscreen_ = false;
+            windowed_ = false; // Kawan>
+        }
         UpdateGraphicsMode();
     }
 }
@@ -627,6 +645,12 @@ void Options::LoadElements(const XMLElement& root)
         {
             borderless_ = paramElem.GetBool("value");
         }
+        // Kawan>
+        else if (name.Compare("Windowed") == 0)
+        {
+            windowed_ = paramElem.GetBool("value");
+        }
+        //
         else if (name.Compare("Resizeable") == 0)
         {
             resizeable_ = paramElem.GetBool("value");
