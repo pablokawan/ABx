@@ -323,18 +323,21 @@ void WorldLevel::Update(StringHash, VariantMap&)
         if (!sc->IsTriggered(Events::E_SC_KEEPRUNNING))
             player_->controls_.Set(CTRL_MOVE_LOCK, false);
     }
-    player_->controls_.Set(CTRL_MOVE_LEFT, sc->IsTriggered(Events::E_SC_MOVELEFT));
-    player_->controls_.Set(CTRL_MOVE_RIGHT, sc->IsTriggered(Events::E_SC_MOVERIGHT));
 
+    // Kawan> Test
     if (sc->IsTriggered(Events::E_SC_MOUSELOOK))
     {
-        // Kawan> Test
         if (sc->IsTriggered(Events::E_SC_MOVEFORWARD) || sc->IsTriggered(Events::E_SC_MOVEBACKWARD))
         {
             player_->controls_.Set(
                 CTRL_MOVE_LEFT, player_->controls_.IsDown(CTRL_MOVE_LEFT) || sc->IsTriggered(Events::E_SC_TURNLEFT));
             player_->controls_.Set(
                 CTRL_MOVE_RIGHT, player_->controls_.IsDown(CTRL_MOVE_RIGHT) || sc->IsTriggered(Events::E_SC_TURNRIGHT));
+        }
+        else
+        {
+            player_->controls_.Set(CTRL_MOVE_LEFT, sc->IsTriggered(Events::E_SC_TURNLEFT));
+            player_->controls_.Set(CTRL_MOVE_RIGHT, sc->IsTriggered(Events::E_SC_TURNRIGHT));
         }
 
         Input* input = GetSubsystem<Input>();
@@ -343,6 +346,9 @@ void WorldLevel::Update(StringHash, VariantMap&)
     }
     else
     {
+        player_->controls_.Set(CTRL_MOVE_LEFT, sc->IsTriggered(Events::E_SC_MOVELEFT));
+        player_->controls_.Set(CTRL_MOVE_RIGHT, sc->IsTriggered(Events::E_SC_MOVERIGHT));
+
         player_->controls_.Set(CTRL_TURN_LEFT, sc->IsTriggered(Events::E_SC_TURNLEFT));
         player_->controls_.Set(CTRL_TURN_RIGHT, sc->IsTriggered(Events::E_SC_TURNRIGHT));
     }
