@@ -24,6 +24,7 @@
 #include "Actor.h"
 #include <AB/ProtocolCodes.h>
 #include <vector>
+#include "FwClient.h" // Kawan>
 
 using namespace Urho3D;
 
@@ -62,6 +63,7 @@ public:
     SharedPtr<Node> cameraNode_;
     bool moveLock_{ false };
     float cameraDistance_{ CAMERA_INITIAL_DIST };
+    void SetPlayerRotation(FwClient* client, float rotation); // Kawan>
     void SetYRotation(int64_t time, float rad, bool updateYaw) override;
     void CameraZoom(bool increase);
     void UpdateYaw();

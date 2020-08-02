@@ -24,7 +24,6 @@
 #include "ActorResourceBar.h"
 #include "ClientPrediction.h"
 #include "EquipmentWindow.h"
-#include "FwClient.h"
 #include "LevelManager.h"
 #include "MathUtils.h"
 #include "Mumble.h"
@@ -367,21 +366,12 @@ void Player::FixedUpdate(float timeStep)
         lastMoveDir_ = moveDir;
     }
 
-    // Kawan>
+    // Kawan> A/D Camera Handling
     if (!(controls_.IsDown(CTRL_TURN_LEFT) && controls_.IsDown(CTRL_TURN_RIGHT)))
-    {
         if (controls_.IsDown(CTRL_TURN_LEFT))
-        {
-            controls_.yaw_ -= .90f;
-        }
+            SetPlayerRotation(client, controls_.yaw_ - .90f);
         else if (controls_.IsDown(CTRL_TURN_RIGHT))
-        {
-            controls_.yaw_ += .90f;
-        }
-
-        client->SetDirection(DegToRad(controls_.yaw_));
-        lastYaw_ = controls_.yaw_;
-    }
+            SetPlayerRotation(client, controls_.yaw_ + .90f);
 
     // Kawan> Disabled for now
     /*uint8_t turnDir = GetTurnDir();
@@ -402,6 +392,14 @@ void Player::FixedUpdate(float timeStep)
 
     // Also Update here. The client takes care that it doesn't send too often.
     client->Update(timeStep);
+}
+
+// Kawan> Camera Handling
+void Player::SetPlayerRotation(FwClient* client, float rotation)
+{
+    controls_.yaw_ = rotation;
+    client->SetDirection(DegToRad(controls_.yaw_));
+    lastYaw_ = controls_.yaw_;
 }
 
 void Player::SetYRotation(int64_t time, float rad, bool updateYaw)
