@@ -36,6 +36,6 @@
 #define DEBUG_HUD
 
 // Animate player head with mouse look
-//#define PLAYER_HEAD_ANIMATION
+#define PLAYER_HEAD_ANIMATION
 
 #include <AB/CommonConfig.h>
