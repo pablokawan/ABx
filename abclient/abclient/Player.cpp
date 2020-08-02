@@ -327,9 +327,9 @@ uint8_t Player::GetTurnDir()
     if (!(controls_.IsDown(CTRL_TURN_LEFT) && controls_.IsDown(CTRL_TURN_RIGHT)))
     {
         if (controls_.IsDown(CTRL_TURN_LEFT))
-            turnDir |= AB::GameProtocol::TurnDirectionLeft;
-        if (controls_.IsDown(CTRL_TURN_RIGHT))
-            turnDir |= AB::GameProtocol::TurnDirectionRight;
+            turnDir = AB::GameProtocol::TurnDirectionLeft;
+        else if (controls_.IsDown(CTRL_TURN_RIGHT))
+            turnDir = AB::GameProtocol::TurnDirectionRight;
     }
     return turnDir;
 }
@@ -367,12 +367,29 @@ void Player::FixedUpdate(float timeStep)
         lastMoveDir_ = moveDir;
     }
 
-    uint8_t turnDir = GetTurnDir();
+    // Kawan>
+    if (!(controls_.IsDown(CTRL_TURN_LEFT) && controls_.IsDown(CTRL_TURN_RIGHT)))
+    {
+        if (controls_.IsDown(CTRL_TURN_LEFT))
+        {
+            controls_.yaw_ -= .90f;
+        }
+        else if (controls_.IsDown(CTRL_TURN_RIGHT))
+        {
+            controls_.yaw_ += .90f;
+        }
+
+        client->SetDirection(DegToRad(controls_.yaw_));
+        lastYaw_ = controls_.yaw_;
+    }
+
+    // Kawan> Disabled for now
+    /*uint8_t turnDir = GetTurnDir();
     if (lastTurnDir_ != turnDir)
     {
         client->Turn(turnDir);
         lastTurnDir_ = turnDir;
-    }
+    }*/
 
     if (creatureState_ == AB::GameProtocol::CreatureState::Moving && fabs(lastYaw_ - controls_.yaw_) > 1.0f)
     {

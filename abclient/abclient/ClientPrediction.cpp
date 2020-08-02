@@ -194,12 +194,14 @@ void ClientPrediction::FixedUpdate(float timeStep)
     }
 
     const uint8_t turnDir = player->GetTurnDir();
-    if (turnDir != 0)
+
+    // Kawan> Disabled
+    /*if (turnDir != 0)
     {
         if (state == AB::GameProtocol::CreatureState::Idle)
             player->SetCreatureState(serverTime_, AB::GameProtocol::CreatureState::Moving);
         UpdateTurn(timeStep, turnDir, player->GetSpeedFactor());
-    }
+    }*/
 
     if (state == AB::GameProtocol::CreatureState::Moving)
     {

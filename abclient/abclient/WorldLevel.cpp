@@ -328,10 +328,14 @@ void WorldLevel::Update(StringHash, VariantMap&)
 
     if (sc->IsTriggered(Events::E_SC_MOUSELOOK))
     {
-        player_->controls_.Set(CTRL_MOVE_LEFT, player_->controls_.IsDown(CTRL_MOVE_LEFT) ||
-            sc->IsTriggered(Events::E_SC_TURNLEFT));
-        player_->controls_.Set(CTRL_MOVE_RIGHT, player_->controls_.IsDown(CTRL_MOVE_RIGHT) ||
-            sc->IsTriggered(Events::E_SC_TURNRIGHT));
+        // Kawan> Test
+        if (sc->IsTriggered(Events::E_SC_MOVEFORWARD) || sc->IsTriggered(Events::E_SC_MOVEBACKWARD))
+        {
+            player_->controls_.Set(
+                CTRL_MOVE_LEFT, player_->controls_.IsDown(CTRL_MOVE_LEFT) || sc->IsTriggered(Events::E_SC_TURNLEFT));
+            player_->controls_.Set(
+                CTRL_MOVE_RIGHT, player_->controls_.IsDown(CTRL_MOVE_RIGHT) || sc->IsTriggered(Events::E_SC_TURNRIGHT));
+        }
 
         Input* input = GetSubsystem<Input>();
         player_->controls_.yaw_ += static_cast<float>(input->GetMouseMoveX()) * op->mouseSensitivity_;
