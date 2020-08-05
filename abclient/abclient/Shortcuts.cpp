@@ -228,8 +228,6 @@ void Shortcuts::Init()
     shortcuts_[Events::E_SC_MOVEBACKWARD] = ShortcutEvent(Events::E_SC_MOVEBACKWARD, "Move backward", Trigger::None);
     shortcuts_[Events::E_SC_TURNLEFT] = ShortcutEvent(Events::E_SC_TURNLEFT, "Turn left", Trigger::None);
     shortcuts_[Events::E_SC_TURNRIGHT] = ShortcutEvent(Events::E_SC_TURNRIGHT, "Turn right", Trigger::None);
-    shortcuts_[Events::E_SC_MOVELEFT] = ShortcutEvent(Events::E_SC_MOVELEFT, "Move left", Trigger::None);
-    shortcuts_[Events::E_SC_MOVERIGHT] = ShortcutEvent(Events::E_SC_MOVERIGHT, "Move right", Trigger::None);
     shortcuts_[Events::E_SC_KEEPRUNNING] = ShortcutEvent(Events::E_SC_KEEPRUNNING, "Keep running", Trigger::Down);
 
     shortcuts_[Events::E_SC_REVERSECAMERA] = ShortcutEvent(Events::E_SC_REVERSECAMERA, "Reverse Camera", Trigger::None);
@@ -307,8 +305,6 @@ void Shortcuts::AddDefault()
     Add(Events::E_SC_TURNLEFT, { KEY_LEFT });
     Add(Events::E_SC_TURNRIGHT, { KEY_D });
     Add(Events::E_SC_TURNRIGHT, { KEY_RIGHT });
-    Add(Events::E_SC_MOVELEFT, { KEY_Q });
-    Add(Events::E_SC_MOVERIGHT, { KEY_E });
 
     Add(Events::E_SC_KEEPRUNNING, { KEY_R });
     Add(Events::E_SC_REVERSECAMERA, { KEY_Y });

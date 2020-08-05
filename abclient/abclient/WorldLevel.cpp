@@ -325,32 +325,22 @@ void WorldLevel::Update(StringHash, VariantMap&)
     }
 
     // Kawan> Test
-    if (sc->IsTriggered(Events::E_SC_MOUSELOOK))
+    if (sc->IsTriggered(Events::E_SC_MOVEFORWARD) || sc->IsTriggered(Events::E_SC_MOVEBACKWARD))
     {
-        if (sc->IsTriggered(Events::E_SC_MOVEFORWARD) || sc->IsTriggered(Events::E_SC_MOVEBACKWARD))
-        {
-            player_->controls_.Set(
-                CTRL_MOVE_LEFT, player_->controls_.IsDown(CTRL_MOVE_LEFT) || sc->IsTriggered(Events::E_SC_TURNLEFT));
-            player_->controls_.Set(
-                CTRL_MOVE_RIGHT, player_->controls_.IsDown(CTRL_MOVE_RIGHT) || sc->IsTriggered(Events::E_SC_TURNRIGHT));
-        }
-        else
-        {
-            player_->controls_.Set(CTRL_MOVE_LEFT, sc->IsTriggered(Events::E_SC_TURNLEFT));
-            player_->controls_.Set(CTRL_MOVE_RIGHT, sc->IsTriggered(Events::E_SC_TURNRIGHT));
-        }
-
-        Input* input = GetSubsystem<Input>();
-        player_->controls_.yaw_ += static_cast<float>(input->GetMouseMoveX()) * op->mouseSensitivity_;
-        player_->controls_.pitch_ += static_cast<float>(input->GetMouseMoveY()) * op->mouseSensitivity_;
+        player_->controls_.Set(CTRL_TURN_LEFT, sc->IsTriggered(Events::E_SC_TURNLEFT));
+        player_->controls_.Set(CTRL_TURN_RIGHT, sc->IsTriggered(Events::E_SC_TURNRIGHT));
     }
     else
     {
-        player_->controls_.Set(CTRL_MOVE_LEFT, sc->IsTriggered(Events::E_SC_MOVELEFT));
-        player_->controls_.Set(CTRL_MOVE_RIGHT, sc->IsTriggered(Events::E_SC_MOVERIGHT));
+        player_->controls_.Set(CTRL_MOVE_LEFT, sc->IsTriggered(Events::E_SC_TURNLEFT));
+        player_->controls_.Set(CTRL_MOVE_RIGHT, sc->IsTriggered(Events::E_SC_TURNRIGHT));
+    }
 
-        player_->controls_.Set(CTRL_TURN_LEFT, sc->IsTriggered(Events::E_SC_TURNLEFT));
-        player_->controls_.Set(CTRL_TURN_RIGHT, sc->IsTriggered(Events::E_SC_TURNRIGHT));
+    if (sc->IsTriggered(Events::E_SC_MOUSELOOK))
+    {
+        Input* input = GetSubsystem<Input>();
+        player_->controls_.yaw_ += static_cast<float>(input->GetMouseMoveX()) * op->mouseSensitivity_;
+        player_->controls_.pitch_ += static_cast<float>(input->GetMouseMoveY()) * op->mouseSensitivity_;
     }
 
     // Limit pitch
