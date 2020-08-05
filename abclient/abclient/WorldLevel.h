@@ -235,6 +235,6 @@ private:
   PropReadStream& data);
 
     
-    void HandleInteraction();
+    void HandleInteraction(GameObject* obj);
 };
 

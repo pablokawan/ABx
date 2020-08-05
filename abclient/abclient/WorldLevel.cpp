@@ -198,19 +198,7 @@ void WorldLevel::HandleDoubleClick(StringHash, VariantMap&)
     Input* input = GetSubsystem<Input>();
     // Pick object
     GameObject* object = GetObjectAt<GameObject>(input->GetMousePosition());
-    if (object)
-    {
-        float dist = player_->GetNode()->GetPosition().DistanceToPoint(object->GetNode()->GetPosition());
-        if (dist > Game::RANGE_ADJECENT)
-        {
-            HandleInteraction();
-            return;
-        }
-        else
-        {
-            player_->ClickObject(object->gameId_);
-        }
-    }
+    HandleInteraction(object);
 }
 
 void WorldLevel::HandleMouseDown(StringHash, VariantMap&)
@@ -870,19 +858,31 @@ void WorldLevel::HandleHideUI(StringHash, VariantMap&)
 
 void WorldLevel::HandleDefaultAction(StringHash, VariantMap&)
 {
-    HandleInteraction();
-}
-
-void WorldLevel::HandleInteraction()
-{
     auto sel = player_->GetSelectedObject();
     if (!Is<Actor>(sel))
         return;
 
-    if (!AB::Entities::IsOutpost(mapType_) && player_->IsEnemy(To<Actor>(sel)))
-        player_->Attack();
-    else
+    HandleInteraction(sel);
+}
+
+void WorldLevel::HandleInteraction(GameObject* obj)
+{
+    if (!obj)
+        return;
+
+    float dist = player_->GetNode()->GetPosition().DistanceToPoint(obj->GetNode()->GetPosition());
+    if (dist > Game::RANGE_ADJECENT)
+    {
         player_->FollowSelected();
+        return;
+    }
+    else
+    {
+        if (!AB::Entities::IsOutpost(mapType_) && player_->IsEnemy(To<Actor>(obj)))
+            player_->Attack();
+        else
+            player_->ClickObject(obj->gameId_);
+    }
 }
 
 void WorldLevel::HandleKeepRunning(StringHash, VariantMap&)
