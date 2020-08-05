@@ -306,12 +306,12 @@ void Shortcuts::AddDefault()
     Add(Events::E_SC_TURNRIGHT, { KEY_D });
     Add(Events::E_SC_TURNRIGHT, { KEY_RIGHT });
 
-    Add(Events::E_SC_KEEPRUNNING, { KEY_R });
-    Add(Events::E_SC_REVERSECAMERA, { KEY_Y });
+    Add(Events::E_SC_KEEPRUNNING, { KEY_Y });
+    Add(Events::E_SC_REVERSECAMERA, { KEY_R });
     Add(Events::E_SC_HIGHLIGHTOBJECTS, { KEY_LCTRL });
     Add(Events::E_SC_PINGTARGET, { KEY_LCTRL });
 
-    Add(Events::E_SC_DEFAULTACTION, { KEY_SPACE });
+    Add(Events::E_SC_DEFAULTACTION, { KEY_E });
     Add(Events::E_SC_TOGGLEMAP, { KEY_M });
     Add(Events::E_SC_TOGGLEPARTYWINDOW, { KEY_P });
     Add(Events::E_SC_TOGGLEFRIENDLISTWINDOW, { KEY_N });
@@ -330,7 +330,7 @@ void Shortcuts::AddDefault()
     Add(Events::E_SC_CHATWHISPER, { KEY_5, MOUSEB_NONE, SC_MOD_SHIFT });
     Add(Events::E_SC_TOGGLECHATWINDOW, { KEY_CARET });
 
-    Add(Events::E_SC_HIDEUI, { KEY_BACKSPACE });
+    Add(Events::E_SC_HIDEUI, { KEY_H });
 
     Add(Events::E_SC_USESKILL1, { KEY_1 });
     Add(Events::E_SC_USESKILL2, { KEY_2 });
