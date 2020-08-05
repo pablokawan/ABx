@@ -124,6 +124,7 @@ void WorldLevel::SubscribeToEvents()
     SubscribeToEvent(E_MOUSEBUTTONUP, URHO3D_HANDLER(WorldLevel, HandleMouseUp));
     SubscribeToEvent(E_MOUSEWHEEL, URHO3D_HANDLER(WorldLevel, HandleMouseWheel));
     SubscribeToEvent(E_MOUSEMOVE, URHO3D_HANDLER(WorldLevel, HandleMouseMove));
+    SubscribeToEvent(E_UIMOUSEDOUBLECLICK, URHO3D_HANDLER(WorldLevel, HandleDoubleClick));
 
     SubscribeToEvent(Events::E_SC_USESKILL1, URHO3D_HANDLER(WorldLevel, HandleUseSkill));
     SubscribeToEvent(Events::E_SC_USESKILL2, URHO3D_HANDLER(WorldLevel, HandleUseSkill));
@@ -184,6 +185,25 @@ void WorldLevel::HandleServerJoinedLeft(StringHash, VariantMap&)
     SendEvent(Events::E_GOTSERVICES, eData);
 }
 
+void WorldLevel::HandleDoubleClick(StringHash, VariantMap&)
+{
+    using namespace MouseButtonDown;
+
+    auto* ui = GetSubsystem<UI>();
+    IntVector2 pos = ui->GetCursorPosition();
+    // Check the cursor is visible and there is no UI element in front of the cursor
+    if (ui->GetElementAt(pos, true))
+        return;
+
+    Input* input = GetSubsystem<Input>();
+    // Pick object
+    GameObject* object = GetObjectAt<GameObject>(input->GetMousePosition());
+    if (object)
+    {
+        player_->ClickObject(object->gameId_);
+    }
+}
+
 void WorldLevel::HandleMouseDown(StringHash, VariantMap&)
 {
     using namespace MouseButtonDown;
@@ -207,7 +227,6 @@ void WorldLevel::HandleMouseDown(StringHash, VariantMap&)
         GameObject* object = GetObjectAt<GameObject>(input->GetMousePosition());
         if (object)
         {
-            player_->ClickObject(object->gameId_);
             if (object->IsSelectable())
                 player_->SelectObject(object->gameId_);
         }

@@ -180,6 +180,7 @@ private:
 
     void HandleLevelReady(StringHash eventType, VariantMap& eventData);
     void HandleServerJoinedLeft(StringHash eventType, VariantMap& eventData);
+    void HandleDoubleClick(StringHash eventType, VariantMap& eventData);
     void HandleMouseDown(StringHash eventType, VariantMap& eventData);
     void HandleMouseUp(StringHash eventType, VariantMap& eventData);
     void HandleMouseWheel(StringHash eventType, VariantMap& eventData);
