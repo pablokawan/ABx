@@ -233,5 +233,8 @@ private:
         uint32_t groupId, uint8_t groupPos, uint32_t groupMask,
         sa::
   PropReadStream& data);
+
+    
+    void HandleInteraction();
 };
 

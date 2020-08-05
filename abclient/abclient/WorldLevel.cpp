@@ -200,7 +200,16 @@ void WorldLevel::HandleDoubleClick(StringHash, VariantMap&)
     GameObject* object = GetObjectAt<GameObject>(input->GetMousePosition());
     if (object)
     {
-        player_->ClickObject(object->gameId_);
+        float dist = player_->GetNode()->GetPosition().DistanceToPoint(object->GetNode()->GetPosition());
+        if (dist <= Game::RANGE_SELECT)
+        {
+            HandleInteraction();
+            return;
+        }
+        else
+        {
+            player_->ClickObject(object->gameId_);
+        }
     }
 }
 
@@ -860,6 +869,11 @@ void WorldLevel::HandleHideUI(StringHash, VariantMap&)
 }
 
 void WorldLevel::HandleDefaultAction(StringHash, VariantMap&)
+{
+    HandleInteraction();
+}
+
+void WorldLevel::HandleInteraction()
 {
     auto sel = player_->GetSelectedObject();
     if (!Is<Actor>(sel))
