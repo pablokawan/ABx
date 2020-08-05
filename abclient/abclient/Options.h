@@ -68,7 +68,7 @@ public:
     String password_;
     Vector<Environment> environments_;
 
-    bool stickCameraToHead_{ true };
+    bool stickCameraToHead_{ false };
     bool soundListenerToHead_{ false };
     bool disableMouseWalking_{ false };
     bool enableMumble_{ false };
