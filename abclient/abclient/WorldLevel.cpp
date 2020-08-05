@@ -201,7 +201,7 @@ void WorldLevel::HandleDoubleClick(StringHash, VariantMap&)
     if (object)
     {
         float dist = player_->GetNode()->GetPosition().DistanceToPoint(object->GetNode()->GetPosition());
-        if (dist <= Game::RANGE_SELECT)
+        if (dist > Game::RANGE_ADJECENT)
         {
             HandleInteraction();
             return;
