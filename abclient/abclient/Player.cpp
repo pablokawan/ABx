@@ -498,7 +498,7 @@ void Player::PostUpdate(float timeStep)
     // Turn head to camera pitch, but limit to avoid unnatural animation
     float limitPitch = Clamp(controls_.pitch_, -30.0f, 30.0f);
     float _yaw = controls_.yaw_ - characterNode->GetRotation().YawAngle();
-    yaw = _yaw - floor((_yaw + 180.0f) / 360.0f) * 360.0f; // Kawan>
+    float yaw = _yaw - floor((_yaw + 180.0f) / 360.0f) * 360.0f;
     float limitYaw = Clamp(yaw, -45.0f, 45.0f);
     Quaternion headDir = characterNode->GetRotation() *
         Quaternion(limitYaw, Vector3::UP) *
