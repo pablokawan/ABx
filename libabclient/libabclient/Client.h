@@ -35,6 +35,7 @@
 #include <sa/CircularQueue.h>
 #include <numeric>
 #include <AB/Packets/ServerPackets.h>
+#include <deque>
 
 namespace httplib {
 class SSLClient;
@@ -73,6 +74,7 @@ private:
     Crypto::DHKeys dhKeys_;
     State state_{ State::Disconnected };
     ProtocolLogin& GetProtoLogin();
+
     void Terminate();
 
     // Receiver
@@ -222,6 +224,8 @@ public:
         return 0;
     }
     int64_t GetClockDiff() const;
+    // Sends an UPD packet to the login server to see if it's online. This is blocking until the server responds or timeouts.
+    std::pair<bool, uint32_t> PingServer(const std::string& host, uint16_t port);
 
     /// Causes the server to change the map for the whole party
     void ChangeMap(const std::string& mapUuid);

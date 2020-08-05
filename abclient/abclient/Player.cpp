@@ -42,6 +42,8 @@
 
 //#include <Urho3D/DebugNew.h>
 
+#define PLAYER_HEAD_ANIMATION
+
 Player::Player(Context* context) :
     Actor(context)
 {
@@ -115,6 +117,31 @@ void Player::Init(Scene* scene, const Vector3& position, const Quaternion& rotat
 
     // Set skills
     SetSkillBarSkills();
+}
+
+void Player::CreateSoundListener()
+{
+    if (soundListenerNode_)
+        soundListenerNode_->Remove();
+
+    // Add sound listener to camera node, also Guild Wars does it so.
+    auto* options = GetSubsystem<Options>();
+    Node* parentNode = nullptr;
+    if (options->soundListenerToHead_)
+    {
+        parentNode = GetNode()->GetChild("Head", true);
+        if (!parentNode)
+            parentNode = GetNode();
+    }
+    else
+        parentNode = cameraNode_;
+
+    soundListenerNode_ = parentNode->CreateChild("SoundListenerNode");
+    // Let's face the sound
+    soundListenerNode_->SetDirection(Vector3(0.0f, M_HALF_PI, 0.0f));
+    SoundListener* soundListener = soundListenerNode_->CreateComponent<SoundListener>();
+    auto* audio = GetSubsystem<Audio>();
+    audio->SetListener(soundListener);
 }
 
 void Player::HandleSkillsChanged(StringHash, VariantMap& eventData)
@@ -495,17 +522,24 @@ void Player::PostUpdate(float timeStep)
     Node* headNode = characterNode->GetChild("Head", true);
 
 #ifdef PLAYER_HEAD_ANIMATION
-    // Turn head to camera pitch, but limit to avoid unnatural animation
-    float limitPitch = Clamp(controls_.pitch_, -30.0f, 30.0f);
-    float _yaw = controls_.yaw_ - characterNode->GetRotation().YawAngle();
-    float yaw = _yaw - floor((_yaw + 180.0f) / 360.0f) * 360.0f;
-    float limitYaw = Clamp(yaw, -45.0f, 45.0f);
-    Quaternion headDir = characterNode->GetRotation() *
-        Quaternion(limitYaw, Vector3::UP) *
-        Quaternion(limitPitch, Vector3(1.0f, 0.0f, 0.0f));
-    // This could be expanded to look at an arbitrary target, now just look at a point in front
-    Vector3 headWorldTarget = headNode->GetWorldPosition() + headDir * Vector3(0.0f, 0.0f, -1.0f);
-    headNode->LookAt(headWorldTarget, Vector3(0.0f, 1.0f, 0.0f));
+    if (headNode)
+    {
+        // Turn head to camera pitch, but limit to avoid unnatural animation
+        float limitPitch = Clamp(controls_.pitch_, -30.0f, 30.0f);
+        float yaw2 = controls_.yaw_ - characterNode->GetRotation().YawAngle();
+        // When the camera is in front of the player, i.e. looking into the face of the player, make the player look forward.
+        if (fabs(yaw2 - 180.0f) < 60.0f)
+            yaw2 = 0.0f;
+
+        float yaw3 = yaw2 - floor((yaw2 + 180.0f) / 360.0f) * 360.0f;
+        float limitYaw = Clamp(yaw3, -45.0f, 45.0f);
+        Quaternion headDir = characterNode->GetRotation() *
+            Quaternion(limitYaw, Vector3::UP) *
+            Quaternion(limitPitch, Vector3(1.0f, 0.0f, 0.0f));
+        // This could be expanded to look at an arbitrary target, now just look at a point in front
+        Vector3 headWorldTarget = headNode->GetWorldPosition() + headDir * Vector3(0.0f, 0.0f, -1.0f);
+        headNode->LookAt(headWorldTarget, Vector3(0.0f, 1.0f, 0.0f));
+    }
 #endif
 
     // Third person camera: position behind the character
@@ -528,11 +562,15 @@ void Player::PostUpdate(float timeStep)
 
     PhysicsRaycastResult result;
     // Collide camera ray with static physics objects (layer bitmask 2) to ensure we see the character properly
-    node_->GetScene()->GetComponent<PhysicsWorld>()->RaycastSingle(result,
-        Ray(aimPoint, rayDir), rayDistance, COLLISION_LAYER_CAMERA);
-    if (result.body_)
-        rayDistance = Min(rayDistance, result.distance_ - 1.0f);
-    rayDistance = Clamp(rayDistance, CAMERA_MIN_DIST, CAMERA_MAX_DIST);
+    // Check the camera is not too close to the player model.
+    if (!Equals(rayDistance, 0.0f))
+    {
+        node_->GetScene()->GetComponent<PhysicsWorld>()->RaycastSingle(result,
+            Ray(aimPoint, rayDir), rayDistance, COLLISION_LAYER_CAMERA);
+        if (result.body_)
+            rayDistance = Min(rayDistance, result.distance_ - 1.0f);
+        rayDistance = Clamp(rayDistance, CAMERA_MIN_DIST, CAMERA_MAX_DIST);
+    }
 
     cameraNode_->SetPosition(aimPoint + rayDir * rayDistance);
     cameraNode_->SetRotation(dir);

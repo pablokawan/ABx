@@ -126,14 +126,8 @@ const char* Client::GetNetworkErrorMessage(ConnectionError connectionError)
 }
 
 Client::Client(Receiver& receiver) :
-    receiver_(receiver),
-    ioService_(std::make_shared<asio::io_service>()),
-    loginHost_("127.0.0.1"),
-    loginPort_(2748)
+    Client(receiver, std::make_shared<asio::io_service>())
 {
-    Utils::Random::Instance.Initialize();
-    // Always create new keys
-    dhKeys_.GenerateKeys();
 }
 
 Client::Client(Receiver& receiver, std::shared_ptr<asio::io_service> ioSerive) :
@@ -518,6 +512,39 @@ int64_t Client::GetClockDiff() const
     if (protoGame_)
         return protoGame_->GetClockDiff();
     return 0;
+}
+
+std::pair<bool, uint32_t> Client::PingServer(const std::string& host, uint16_t port)
+{
+    // The login server should be able to reply within 500ms.
+    static constexpr int64_t TIMEOUT = 500;
+
+    asio::io_service ioService;
+    asio::ip::udp::socket socket(ioService, asio::ip::udp::endpoint(asio::ip::udp::v4(), 0));
+    asio::ip::udp::resolver resolver(ioService);
+    asio::ip::udp::endpoint endpoint = *resolver.resolve(asio::ip::udp::resolver::query(asio::ip::udp::v4(), host, std::to_string(port)));
+    char senddata[64] = "ablogin";
+
+    bool result = false;
+
+    socket.send_to(asio::buffer(senddata, 64), endpoint);
+
+    char recvdata[64] = {};
+
+    socket.async_receive_from(asio::buffer(recvdata, 64), endpoint, [&](const asio::error_code&, size_t)
+    {
+        if (strcmp(senddata, recvdata) == 0)
+            result = true;
+    });
+
+    int64_t start = AbTick();
+
+    while (!result && (AbTick() - start) < TIMEOUT)
+    {
+        ioService.poll();
+        millisleep(1);
+    }
+    return { result, static_cast<uint32_t>(AbTick() - start) };
 }
 
 void Client::ChangeMap(const std::string& mapUuid)

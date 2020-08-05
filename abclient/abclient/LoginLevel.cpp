@@ -27,6 +27,9 @@
 #include "WindowManager.h"
 #include "PartyWindow.h"
 #include "MultiLineEdit.h"
+#include "InternalEvents.h"
+#include "PingDot.h"
+#include "TimeUtils.h"
 
 //#include <Urho3D/DebugNew.h>
 
@@ -46,6 +49,16 @@ LoginLevel::LoginLevel(Context* context) :
     SubscribeToEvents();
     FwClient* net = GetSubsystem<FwClient>();
     net->SetState(Client::State::Disconnected);
+}
+
+void LoginLevel::PingServers()
+{
+    lastPing_ = Client::AbTick();
+    auto* client = GetSubsystem<FwClient>();
+    for (auto it = servers_.Begin(); it != servers_.End(); ++it)
+    {
+        client->PingServer((*it).name, (*it).host, (*it).port);
+    }
 }
 
 void LoginLevel::CreateScene()
@@ -110,6 +123,7 @@ void LoginLevel::CreateEnvironmentsList()
                 }
             }
             ++i;
+            servers_.Push({ env.name, env.host, env.port });
         }
         environmentsList_->SetMinWidth(width + 50);
         environmentsList_->SetWidth(width + 50);
@@ -117,6 +131,8 @@ void LoginLevel::CreateEnvironmentsList()
         environmentsList_->SetHeight(height + 4);
         environmentsList_->SetSelection(selIndex);
     }
+    else
+        servers_.Push({ "Default", opts->loginHost_, opts->loginPort_ });
 }
 
 void LoginLevel::CreateUI()
@@ -147,6 +163,7 @@ void LoginLevel::CreateUI()
     SubscribeToEvent(createAccountButton_, E_RELEASED, URHO3D_HANDLER(LoginLevel, HandleCreateAccountClicked));
 
     FwClient* net = GetSubsystem<FwClient>();
+    Options* options = GetSubsystem<Options>();
     if (!net->accountName_.Empty() && !net->accountPass_.Empty())
     {
         nameEdit_->SetText(net->accountName_);
@@ -154,10 +171,10 @@ void LoginLevel::CreateUI()
     }
     else
     {
-        Options* options = GetSubsystem<Options>();
         nameEdit_->SetText(options->username_);
         passEdit_->SetText(options->password_);
     }
+
     button_->SetEnabled(!(nameEdit_->GetText().Empty() || passEdit_->GetText().Empty()));
 
 #if 0
@@ -193,6 +210,8 @@ void LoginLevel::HandleUpdate(StringHash, VariantMap& eventData)
     Quaternion rot;
     rot.FromAngleAxis(timeStep, Vector3(0.0f, 1.0f, 0.0f));
     cameraNode_->Rotate(rot);
+    if (Client::AbTick() - lastPing_ > 5000)
+        PingServers();
 }
 
 void LoginLevel::HandleTextFinished(StringHash, VariantMap&)
@@ -215,6 +234,67 @@ void LoginLevel::HandleKeyDown(StringHash, VariantMap&)
     String name = nameEdit_->GetText();
     String pass = passEdit_->GetText();
     button_->SetEnabled(!name.Empty() && !pass.Empty());
+}
+
+void LoginLevel::HandleServerPing(StringHash, VariantMap& eventData)
+{
+    using namespace Events::ServerPing;
+    if (!environmentsList_)
+    {
+        auto* cache = GetSubsystem<ResourceCache>();
+        if (!pingDot_)
+        {
+            pingDot_ = uiRoot_->CreateChild<Button>("ServerPing");
+            pingDot_->SetSize({ 16, 16 });
+            pingDot_->SetPosition({ 10, -10 });
+            pingDot_->SetAlignment(HA_LEFT, VA_BOTTOM);
+            auto* tooltip = pingDot_->CreateChild<ToolTip>();
+            tooltip->SetLayoutMode(LM_HORIZONTAL);
+            tooltip->SetPosition({ 20, -30 });
+            tooltip->SetStyleAuto();
+            BorderImage* ttWindow = tooltip->CreateChild<BorderImage>();
+            ttWindow->SetStyle("ToolTipBorderImage");
+            pingText_ = ttWindow->CreateChild<Text>("ServerPingText");
+            pingText_->SetStyle("ToolTipText");
+            tooltip->SetMinSize({ 100, 20 });
+        }
+
+        auto tex = cache->GetResource<Texture2D>("Textures/PingDot.png");
+        pingDot_->SetTexture(tex);
+        if (eventData[P_PING_TIME].GetUInt() < 50)
+            pingDot_->SetImageRect(PingDot::PING_GOOD);
+        else if (eventData[P_PING_TIME].GetUInt() < 100)
+            pingDot_->SetImageRect(PingDot::PING_OKAY);
+        else
+            pingDot_->SetImageRect(PingDot::PING_BAD);
+        String t = eventData[P_HOST].GetString();
+        t.AppendWithFormat(":%u ", eventData[P_PORT].GetUInt());
+        bool online = eventData[P_SUCCESS].GetBool();
+        if (!online)
+            t.Append("offline");
+        else
+            t.AppendWithFormat("online (%u ms)", eventData[P_PING_TIME].GetUInt());
+        pingText_->SetText(t);
+        return;
+    }
+
+    for (unsigned i = 0; i < environmentsList_->GetNumItems(); ++i)
+    {
+        auto* item = static_cast<Text*>(environmentsList_->GetItem(i));
+        if (item->GetVar("String Value").GetString() == eventData[P_NAME].GetString())
+        {
+            String t = eventData[P_NAME].GetString();
+            bool online = eventData[P_SUCCESS].GetBool();
+            if (!online)
+                t.Append(" offline");
+            else
+                t.AppendWithFormat(" online (%u ms)", eventData[P_PING_TIME].GetUInt());
+            item->SetText(t);
+            environmentsList_->SetMinWidth(item->GetWidth() + 10);
+            environmentsList_->UpdateLayout();
+            break;
+        }
+    }
 }
 
 void LoginLevel::DoLogin()
@@ -267,4 +347,5 @@ void LoginLevel::SubscribeToEvents()
     BaseLevel::SubscribeToEvents();
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(LoginLevel, HandleUpdate));
     SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(LoginLevel, HandleKeyDown));
+    SubscribeToEvent(Events::E_SERVER_PING, URHO3D_HANDLER(LoginLevel, HandleServerPing));
 }

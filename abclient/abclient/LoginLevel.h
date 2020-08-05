@@ -36,18 +36,30 @@ protected:
     void SubscribeToEvents() override;
     void CreateUI() override;
 private:
+    struct LoginServers
+    {
+        String name;
+        String host;
+        uint16_t port;
+    };
+    Vector<LoginServers> servers_;
+    int64_t lastPing_{ 0 };
     bool loggingIn_;
     SharedPtr<LineEdit> nameEdit_;
     SharedPtr<LineEdit> passEdit_;
     SharedPtr<Button> button_;
     SharedPtr<Button> createAccountButton_;
     SharedPtr<DropDownList> environmentsList_;
+    SharedPtr<Button> pingDot_;
+    SharedPtr<Text> pingText_;
+    void PingServers();
     void CreateScene() override;
     void HandleLoginClicked(StringHash eventType, VariantMap& eventData);
     void HandleCreateAccountClicked(StringHash eventType, VariantMap& eventData);
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     void HandleTextFinished(StringHash eventType, VariantMap& eventData);
     void HandleKeyDown(StringHash eventType, VariantMap& eventData);
+    void HandleServerPing(StringHash eventType, VariantMap& eventData);
     void DoLogin();
     void SetEnvironment();
     Text* CreateDropdownItem(const String& text, const String& value);

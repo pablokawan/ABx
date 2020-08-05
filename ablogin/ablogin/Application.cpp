@@ -32,6 +32,7 @@
 #include <abscommon/FileUtils.h>
 #include <abscommon/Logo.h>
 #include <abscommon/OutputMessage.h>
+#include <abscommon/PingServer.h>
 #include <abscommon/Random.h>
 #include <abscommon/Scheduler.h>
 #include <abscommon/SimpleConfigManager.h>
@@ -41,7 +42,7 @@
 
 Application::Application() :
     ServerApp::ServerApp(),
-    ioService_()
+    ioService_(std::make_shared<asio::io_service>())
 {
     programDescription_ = SERVER_PRODUCT_NAME;
     serverType_ = AB::Entities::ServiceTypeLoginServer;
@@ -60,13 +61,14 @@ Application::Application() :
     Subsystems::Instance.CreateSubsystem<Asynch::Scheduler>();
     Subsystems::Instance.CreateSubsystem<Net::ConnectionManager>();
     Subsystems::Instance.CreateSubsystem<IO::SimpleConfigManager>();
-    Subsystems::Instance.CreateSubsystem<IO::DataClient>(ioService_);
-    Subsystems::Instance.CreateSubsystem<Net::MessageClient>(ioService_);
+    Subsystems::Instance.CreateSubsystem<IO::DataClient>(*ioService_);
+    Subsystems::Instance.CreateSubsystem<Net::MessageClient>(*ioService_);
     Subsystems::Instance.CreateSubsystem<Auth::BanManager>();
     Subsystems::Instance.CreateSubsystem<Crypto::Random>();
     Subsystems::Instance.CreateSubsystem<Crypto::DHKeys>();
+    Subsystems::Instance.CreateSubsystem<Net::PingServer>();
 
-    serviceManager_ = std::make_unique<Net::ServiceManager>(ioService_);
+    serviceManager_ = std::make_unique<Net::ServiceManager>(*ioService_);
 }
 
 Application::~Application()
@@ -189,6 +191,7 @@ bool Application::LoadMain()
         LOG_ERROR << "Port can not be 0" << std::endl;
         return false;
     }
+    GetSubsystem<Net::PingServer>()->port_ = serverPort_;
 
     PrintServerInfo();
     return true;
@@ -336,7 +339,8 @@ void Application::Run()
     running_ = true;
     LOG_INFO << "Server is running" << std::endl;
     serviceManager_->Run();
-    ioService_.run();
+    GetSubsystem<Net::PingServer>()->Start();
+    ioService_->run();
 }
 
 void Application::Stop()
@@ -367,7 +371,8 @@ void Application::Stop()
     else
         LOG_ERROR << "Unable to read service" << std::endl;
 
-    ioService_.stop();
+    GetSubsystem<Net::PingServer>()->Stop();
+    ioService_->stop();
 }
 
 std::string Application::GetKeysFile() const
