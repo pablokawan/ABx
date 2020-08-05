@@ -298,13 +298,9 @@ void Shortcuts::Init()
 void Shortcuts::AddDefault()
 {
     Add(Events::E_SC_MOVEFORWARD, { KEY_W });
-    Add(Events::E_SC_MOVEFORWARD, { KEY_UP });
     Add(Events::E_SC_MOVEBACKWARD, { KEY_S });
-    Add(Events::E_SC_MOVEBACKWARD, { KEY_DOWN });
     Add(Events::E_SC_TURNLEFT, { KEY_A });
-    Add(Events::E_SC_TURNLEFT, { KEY_LEFT });
     Add(Events::E_SC_TURNRIGHT, { KEY_D });
-    Add(Events::E_SC_TURNRIGHT, { KEY_RIGHT });
 
     Add(Events::E_SC_KEEPRUNNING, { KEY_Y });
     Add(Events::E_SC_REVERSECAMERA, { KEY_R });
